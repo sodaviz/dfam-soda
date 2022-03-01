@@ -3,7 +3,7 @@
 
 ## About
 
-This project is an NPM package that provides some extensions to SODA that produce an interactive visualization of Transposable Elements.
+This project is an NPM package that produces an interactive visualization of Transposable Elements using SODA.
 The example application can be found live on the [dfam website](https://www.dfam.org/search/annotations).
 
 ## Usage
@@ -12,11 +12,12 @@ The easiest way to use dfam-soda is with the [NPM package manager](https://www.n
 
 Once you have NPM installed, you can install dfam-soda with:
 
-    npm install @traviswheelerlab/dfam-soda
+    npm install @sodaviz/dfam-soda
 
-Alternatively, if you would like to locally run the example application, clone the repository and run:
+If you would like to run the dfam-soda example application locally, clone the repository and run:
 
     npm i 
     make build
     cd example
+    npm i
     make serve

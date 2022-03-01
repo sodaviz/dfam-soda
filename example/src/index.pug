@@ -1,0 +1,58 @@
+html
+  head
+    title dfam-soda
+    link(rel="stylesheet", href="https://sodaviz.org/media/styles.css")
+  body
+    block header
+      h1 dfam-soda
+      button.collapsible info
+      .example-text.content
+        p
+          | The source code for this example can be found on 
+          a(href="https://github.com/sodaviz/dfam-soda") GitHub
+        br
+        p
+          | Dfam-SODA was developed to visualize transposable element annotations from the 
+          a(href="https://mobilednajournal.biomedcentral.com/articles/10.1186/s13100-020-00230-y") Dfam
+          |  database. This application is also hosted (with additional features that integrate with the Dfam platform) on the 
+          a(href="https://www.dfam.org/search/annotations") Dfam website.
+        p From the Dfam site:
+          
+        blockquote
+          | Retrieve pre-calculated Dfam matches for ranges of genomic sequence. 
+          br
+          br
+          | Up to a 1Mbp range can be retrieved at a time, but 100Kbp or smaller is recommended for readability and performance depending on your machine.
+          br  
+          br
+          | Pre-calculated matches are from Dfam + nhmmer searches against dfamseq, which contains reference assemblies for selected genomes covered by families in Dfam.
+          br  
+          br
+          | By default, redundant profile hits (RPH) will be removed as indicated by the checkbox. You can optionally make the search specific to a model by entering the Dfam accession or identifier.
+          br
+          br
+          | The search will analyze both strands between the co-ordinate range, fetching both Dfam model matches that score above the gathering threshold and Tandem Repeat Finder (TRF) matches.
+            
+    block content
+      .field
+        select#chromosome.drop-input-text
+          - let list = Array.from(Array(24).keys()).concat(["M", "X"]).slice(1)
+          each item in list
+            option(value="chr" + item)= "chr" + item
+        span.drop-floating-label Chromosome
+      .field
+        input(type="text", required)#start.input-text
+        span.floating-label Start
+      .field
+        input(type="text", required)#end.input-text
+        span.floating-label Start
+      .field
+        input(type="checkbox", name="nrph", value="nrph")#nrph
+        span Remove redundant profile hits
+
+      .buttons
+        button#submit-query.button.button1 Submit
+        button#reset.button.button2 Reset
+        button#example.button.button2 Example
+      #charts
+      script(src="main.js")
