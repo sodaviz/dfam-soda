@@ -39,7 +39,7 @@
     "email": "jack.roddy@umontana.edu",
     "url": "https://github.com/jackroddy"
   },
-  "license": "Apache-2.0",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/sodaviz/dfam-soda/issues"
   }
