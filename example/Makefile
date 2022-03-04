@@ -7,7 +7,7 @@
 .PHONY: build
 build: builddir
 	npx tsc --build tsconfig.json
-	npx webpack-cli --config webpack.config.js
+	npx esbuild js/main.js --bundle --outfile=build/main.js
 	npx pug-cli -P src/index.pug -o build/
 	
 ### serve
@@ -20,15 +20,6 @@ serve: build
 	@echo "Running server on localhost:8080"
 	@echo "Use ctrl-c to stop"
 	@python3 -m http.server -d build/ -b localhost 8080 && echo "Bye bye!"
-
-### setup
-### -----
-### Install development dependencies, run this first!
-###
-.PHONY: setup
-setup:
-	@npm install --dev
-	@echo "You will also need wget to run the example"
 
 ## ---------------
 ## Private Targets
