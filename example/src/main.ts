@@ -1,12 +1,19 @@
 import * as ds from "@sodaviz/dfam-soda";
+import {Spinner} from "spin.js";
 
-const graphicConf: ds.DfamAnnotationGraphicConfig = {
+let spinner = new Spinner({
+  color: "cadetblue",
+  position: "relative",
+  top: "100px",
+})
+
+let graphicConf: ds.DfamAnnotationGraphicConfig = {
   selector: "#charts",
   rowHeight: 12,
   zoomConstraint: [1, 10],
 };
 
-const graphic = new ds.DfamAnnotationsGraphic(graphicConf);
+let graphic = new ds.DfamAnnotationsGraphic(graphicConf);
 
 window.onresize = () => graphic.resize();
 
@@ -14,17 +21,19 @@ initButtons();
 checkUrl();
 
 function submitQuery() {
-  const chr = (<HTMLInputElement>document.getElementById("chromosome")).value;
-  const start = parseInt(
+  let chr = (<HTMLInputElement>document.getElementById("chromosome")).value;
+  let start = parseInt(
     (<HTMLInputElement>document.getElementById("start")).value
   );
-  const end = parseInt(
+  let end = parseInt(
     (<HTMLInputElement>document.getElementById("end")).value
   );
-  const nrphCheck = <HTMLInputElement>document.getElementById("nrph")!;
-  const nrph = nrphCheck.checked;
-
+  let nrphCheck = <HTMLInputElement>document.getElementById("nrph")!;
+  let nrph = nrphCheck.checked;
+  
   setUrl(chr, `${start}`, `${end}`, `${nrph}`);
+  
+  spinner.spin(document.getElementById("charts")!);
   let query = {
     start: start,
     end: end,
@@ -32,11 +41,11 @@ function submitQuery() {
     nrph: nrph,
   };
 
-  ds.renderGraphic(graphic, query);
+  ds.renderGraphic(graphic, query).then(() => spinner.stop());
 }
 
 function setUrl(chr: string, start: string, end: string, nrph: string): void {
-  const params = new URLSearchParams(location.search);
+  let params = new URLSearchParams(location.search);
   params.set("chromosome", chr);
   params.set("start", start);
   params.set("end", end);
@@ -45,8 +54,8 @@ function setUrl(chr: string, start: string, end: string, nrph: string): void {
 }
 
 function checkUrl(): void {
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
+  let queryString = window.location.search;
+  let urlParams = new URLSearchParams(queryString);
 
   let chrSet = false;
   let startSet = false;
@@ -107,21 +116,21 @@ function checkUrl(): void {
 }
 
 function initButtons(): void {
-  const submitButton = document.getElementById("submit-query")!;
+  let submitButton = document.getElementById("submit-query")!;
   if (submitButton !== undefined) {
     submitButton.addEventListener("click", submitQuery);
   } else {
     throw "Can't find submit button";
   }
 
-  const resetButton = document.getElementById("reset")!;
+  let resetButton = document.getElementById("reset")!;
   if (resetButton !== undefined) {
     resetButton.addEventListener("click", reset);
   } else {
     throw "Can't find reset button";
   }
 
-  const exampleButton = document.getElementById("example")!;
+  let exampleButton = document.getElementById("example")!;
   if (exampleButton !== undefined) {
     exampleButton.addEventListener("click", example);
   } else {
