@@ -32,20 +32,20 @@ button.collapsible info
     - let list = Array.from(Array(24).keys()).concat(["M", "X"]).slice(1)
     each item in list
       option(value="chr" + item)= "chr" + item
-  span.drop-floating-label Chromosome
+  span.drop-floating-label chromosome
 .field
   input(type="text", required)#start.input-text
-  span.floating-label Start
+  span.floating-label start 
 .field
   input(type="text", required)#end.input-text
-  span.floating-label Start
+  span.floating-label end 
 .field
   input(type="checkbox", name="nrph", value="nrph")#nrph
-  span Remove redundant profile hits
+  span remove redundant profile hits
 
 .buttons
-  button#submit-query.button.button1 Submit
-  button#reset.button.button2 Reset
-  button#example.button.button2 Example
+  button#submit-query.button.button1 submit
+  button#reset.button.button2 reset
+  button#example.button.button2 example
 #charts
 script(src="main.js")
