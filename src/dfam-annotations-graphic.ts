@@ -1,14 +1,7 @@
 import * as d3 from "d3";
 import * as soda from "@sodaviz/soda";
-
-import {
-  DfamSearchResults,
-  parseDfamSearchResults,
-  REPEAT_COLORS,
-  REPEAT_TYPES,
-  REPEAT_TYPE_TO_COLOR,
-  DfamAnnotation,
-} from "./main";
+import {DfamAnnotation, DfamRecord, DfamSearchResults} from "./dfam-records";
+import {REPEAT_COLORS, REPEAT_TYPE_MAP, REPEAT_TYPE_TO_COLOR, REPEAT_TYPES} from "./dfam-constants";
 
 export interface DfamAnnotationGraphicConfig {
   selector: string;
@@ -16,6 +9,14 @@ export interface DfamAnnotationGraphicConfig {
   rowHeight?: number;
   zoomConstraint?: [number, number];
   domainConstraint?: (chart: soda.Chart<any>) => [number, number];
+}
+
+export interface DfamGraphicRenderParams {
+  start: number;
+  end: number;
+  forward: DfamAnnotation[];
+  reverse: DfamAnnotation[];
+  simple: DfamAnnotation[];
 }
 
 let colorScale = d3.scaleOrdinal(REPEAT_COLORS).domain(REPEAT_TYPES);
@@ -42,22 +43,14 @@ export class DfamAnnotationsGraphic {
       lowerPadSize: 2,
     };
 
-    let inRender = function (
-      chart: soda.Chart<DfamRenderParams>,
-      params: DfamRenderParams,
-      inverted: boolean
+    let draw = function (
+      this: soda.Chart<DfamRenderParams>,
+      params: DfamRenderParams
     ): void {
       soda.rectangle({
-        chart,
+        chart: this,
         annotations: params.annotations || [],
         selector: "dfam-ann",
-        y: (d) => {
-          if (inverted) {
-            return (d.c.rowCount - d.a.y - 1) * d.c.rowHeight + 2;
-          } else {
-            return d.c.rowHeight * d.a.y + 2;
-          }
-        },
         strokeWidth: 4,
         strokeOpacity: 0,
         strokeColor: (d) => colorScale(d.a.type),
@@ -66,7 +59,7 @@ export class DfamAnnotationsGraphic {
 
       soda.hoverBehavior({
         annotations: params.annotations,
-        chart: chart,
+        chart: this,
         mouseout: (s) => {
           s.style("stroke-opacity", 0);
         },
@@ -77,15 +70,15 @@ export class DfamAnnotationsGraphic {
 
       soda.tooltip({
         annotations: params.annotations,
-        chart: chart,
+        chart: this,
         text: (d) =>
-          `${d.a.modelName} (${d.a.type}): ${d.a.x}-${d.a.x + d.a.w}`,
+          `${d.a.modelName} (${d.a.type}): ${d.a.start}-${d.a.end}`,
         opacity: () => 1.0,
       });
 
       soda.clickBehavior({
         annotations: params.annotations,
-        chart: chart,
+        chart: this,
         click: (s, d) => {
           const rowSelection = d3.select<HTMLElement, any>(`#${d.a.rowId}`);
           const rowElement = rowSelection.node();
@@ -107,16 +100,12 @@ export class DfamAnnotationsGraphic {
       ...chartConf,
       upperPadSize: 20,
       axisType: soda.AxisType.Bottom,
-      inRender(params): void {
-        inRender(this, params, true);
-      },
+      draw
     });
 
     this.simpleChart = new soda.Chart({
       ...chartConf,
-      inRender(params): void {
-        inRender(this, params, false);
-      },
+      draw
     });
 
     this.simpleChart.viewportSelection
@@ -127,9 +116,7 @@ export class DfamAnnotationsGraphic {
 
     this.reverseChart = new soda.Chart({
       ...chartConf,
-      inRender(params): void {
-        inRender(this, params, false);
-      },
+      draw
     });
 
     d3.select(config.selector).append("span").attr("id", "soda-legend");
@@ -157,21 +144,18 @@ export class DfamAnnotationsGraphic {
       let parsedResults = parseDfamSearchResults(data);
       this.forwardChart.render({
         annotations: parsedResults.forward,
-        layoutFn: soda.intervalGraphLayout,
         start: parsedResults.start,
         end: parsedResults.end,
       });
 
       this.reverseChart.render({
         annotations: parsedResults.reverse,
-        layoutFn: soda.intervalGraphLayout,
         start: parsedResults.start,
         end: parsedResults.end,
       });
 
       this.simpleChart.render({
         annotations: parsedResults.simple,
-        layoutFn: soda.intervalGraphLayout,
         start: parsedResults.start,
         end: parsedResults.end,
       });
@@ -179,6 +163,7 @@ export class DfamAnnotationsGraphic {
       this.drawLegend();
     }
   }
+
 
   public drawLegend(): void {
     const legendSelection = d3
@@ -210,3 +195,29 @@ export class DfamAnnotationsGraphic {
     legendSpans.append("span").html((d) => d);
   }
 }
+
+function parseDfamSearchResults(data: DfamSearchResults): DfamGraphicRenderParams {
+  let records: DfamRecord[] = data.hits.concat(data.tandem_repeats);
+  let id = 0;
+  let annotations: DfamAnnotation[] = records.map((rec) => {
+    return {
+      id: `dfam-${id++}`,
+      start: rec.ali_start < rec.ali_end ? rec.ali_start : rec.ali_end,
+      end: rec.ali_end > rec.ali_start ? rec.ali_end : rec.ali_start,
+      type: REPEAT_TYPE_MAP.get(rec.type) || "Unknown",
+      modelName: rec.query,
+      strand: rec.strand,
+      rowId: rec.row_id,
+    }
+  })
+  
+  let params: DfamGraphicRenderParams = {
+    start: data.offset,
+    end: data.offset + data.length,
+    forward: annotations.filter((a) => a.type != "simple" && a.strand == "+"),
+    reverse: annotations.filter((a) => a.type != "simple" && a.strand == "-"),
+    simple: annotations.filter((a) => a.type == "simple"),
+  }
+  return params;
+}
+

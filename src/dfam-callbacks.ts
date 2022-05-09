@@ -1,5 +1,5 @@
 import { DfamAnnotationsGraphic } from "./dfam-annotations-graphic";
-import { DfamSearchResults } from "./dfam-record";
+import { DfamSearchResults } from "./dfam-records";
 
 export interface DfamQuery {
   start: number;
