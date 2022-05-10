@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import * as soda from "@sodaviz/soda";
-import {DfamAnnotation, DfamRecord, DfamSearchResults} from "./dfam-records";
+import {DfamAnnotation, DfamSearchResults} from "./dfam-records";
 import {REPEAT_COLORS, REPEAT_TYPE_MAP, REPEAT_TYPE_TO_COLOR, REPEAT_TYPES} from "./dfam-constants";
 
 export interface DfamAnnotationGraphicConfig {
@@ -100,19 +100,22 @@ export class DfamAnnotationsGraphic {
       ...chartConf,
       upperPadSize: 20,
       axisType: soda.AxisType.Bottom,
+      updateLayout(params) {
+        let layout = soda.intervalGraphLayout(params.annotations);
+        for (const ann of params.annotations) {
+          layout.rowMap.set(ann.id, layout.rowCount - layout.rowMap.get(ann.id)! - 1)
+        }
+        this.layout = layout
+      },
       draw
     });
 
     this.simpleChart = new soda.Chart({
       ...chartConf,
+      rowColors: ["#ddd"],
+      rowOpacity: 1,
       draw
     });
-
-    this.simpleChart.viewportSelection
-      .append("rect")
-      .attr("width", "100%")
-      .attr("height", "100%")
-      .attr("fill", "#ddd");
 
     this.reverseChart = new soda.Chart({
       ...chartConf,
@@ -197,9 +200,8 @@ export class DfamAnnotationsGraphic {
 }
 
 function parseDfamSearchResults(data: DfamSearchResults): DfamGraphicRenderParams {
-  let records: DfamRecord[] = data.hits.concat(data.tandem_repeats);
   let id = 0;
-  let annotations: DfamAnnotation[] = records.map((rec) => {
+  let annotations: DfamAnnotation[] = data.hits.map((rec) => {
     return {
       id: `dfam-${id++}`,
       start: rec.ali_start < rec.ali_end ? rec.ali_start : rec.ali_end,
@@ -210,13 +212,24 @@ function parseDfamSearchResults(data: DfamSearchResults): DfamGraphicRenderParam
       rowId: rec.row_id,
     }
   })
+  let simple = data.tandem_repeats.map((rec) => {
+    return {
+      id: `dfam-${id++}`,
+      start: rec.start,
+      end: rec.end,
+      type: "Simple",
+      modelName: rec.type,
+      strand: rec.strand,
+      rowId: rec.row_id,
+    }   
+  }) 
   
   let params: DfamGraphicRenderParams = {
     start: data.offset,
     end: data.offset + data.length,
-    forward: annotations.filter((a) => a.type != "simple" && a.strand == "+"),
-    reverse: annotations.filter((a) => a.type != "simple" && a.strand == "-"),
-    simple: annotations.filter((a) => a.type == "simple"),
+    forward: annotations.filter((a) => a.strand == "+"),
+    reverse: annotations.filter((a) => a.strand == "-"),
+    simple,
   }
   return params;
 }

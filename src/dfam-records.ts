@@ -37,7 +37,7 @@ export interface DfamAnnotation extends soda.Annotation {
   type: string;
   // TE classification names
   modelName: string;
-  strand: string;
+  strand: string | undefined;
   // provides us a means to select the corresponding row
   // in the table that lists the annotations
   rowId: string;
