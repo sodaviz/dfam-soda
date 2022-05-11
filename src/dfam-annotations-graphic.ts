@@ -47,6 +47,7 @@ export class DfamAnnotationsGraphic {
       this: soda.Chart<DfamRenderParams>,
       params: DfamRenderParams
     ): void {
+      this.addAxis();
       soda.rectangle({
         chart: this,
         annotations: params.annotations || [],
@@ -98,7 +99,7 @@ export class DfamAnnotationsGraphic {
 
     this.forwardChart = new soda.Chart({
       ...chartConf,
-      upperPadSize: 20,
+      upperPadSize: 25,
       axisType: soda.AxisType.Bottom,
       updateLayout(params) {
         let layout = soda.intervalGraphLayout(params.annotations);

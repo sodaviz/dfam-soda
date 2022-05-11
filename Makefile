@@ -1,6 +1,7 @@
 .PHONY: build
 build: 
 	@echo "Building dfam-soda..."
+	@rm -rf dist/
 	@cd src && npx tsc --build tsconfig-src.json
 
 .PHONY: builde
